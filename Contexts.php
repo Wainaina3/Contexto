@@ -60,8 +60,16 @@ class Contexts extends base
         {
             $keywordSql = "insert into mail_keywords set keyword = '$insertMailKeyword'";
 
-            $this->query($keywordSql);
-            array_push($keywordsId,mysqli_insert_id($this->link));
+           if($this->query($keywordSql)){
+               array_push($keywordsId,mysqli_insert_id($this->link));
+           }
+            else {
+                //the keyword exists and thus, get the keyword id from its table
+                array_push($keywordsId,$this->get_keyword_id($insertMailKeyword));
+               // echo "trial in repeating the keyword" . $this->get_keyword_id($insertMailKeyword);
+            }
+
+
 
         }
 
@@ -340,19 +348,19 @@ class Contexts extends base
                $cont_weight=$this->fetch();
            }
        }
-        foreach($context_weight_array as $val){
-            if( $val instanceof Cont_weight){
-                echo $val->get_context_id();
-                echo $val->get_context_weight();
-            }
-
-        }
+//        foreach($context_weight_array as $val){
+//            if( $val instanceof Cont_weight){
+//               // echo $val->get_context_id();
+//                //echo $val->get_context_weight();
+//            }
+//
+//        }
         return $context_weight_array;
     }
 
     /*
      * This function returns an array of contexts and corresponding weight of the keyword
-     * @keywordId This is the keyword Id in the database
+     * @param keywordId This is the keyword Id in the database
      * @returns array Returns an array containing the contexts and weights of the keyword
      */
 
@@ -361,7 +369,7 @@ class Contexts extends base
         include_once("Cont_weight.php");
         $keyword_array=array();
 
-        $sql = "select * from mail_keywords where kid = '$keywordId'";
+        $sql = "select * from keyword_context where kid = '$keywordId'";
 
         if ($this->query($sql)) {
 
@@ -371,15 +379,67 @@ class Contexts extends base
                 $keyword_cont_weight = new Cont_weight();
 
                 $keyword_cont_weight->set_context_id($keyword_info['cid']);
-                echo $keyword_info['cid'];
+               // echo $keyword_info['kid'];
                 $keyword_cont_weight->set_context_weight($keyword_info['weight']);
+
                 array_push($keyword_array,$keyword_cont_weight);
 
                 $keyword_info = $this->fetch();
             }
         }
 
+//        foreach($keyword_array as $val){
+//            if( $val instanceof Cont_weight){
+//                echo $val->get_context_id();
+//                echo $val->get_context_weight();
+//            }
+//
+//       }
+
         return $keyword_array;
+
+    }
+
+
+    /*
+     * This function gets the sid of sender from the sender table given the sender name/address
+     * @param sender The identity of email sender
+     * @returns int sender id (sid) if successful and false otherwise
+     */
+    public function get_sender_id($sender)
+    {
+        $sql = "select * from mail_sender where sender_address = '$sender'";
+
+        if ( $this->query($sql)) {
+
+            $sid = $this->fetch();
+
+            return $sid['sid'];
+        }
+
+    return false;
+    }
+
+    /*
+     * This function gets the id of a keyword in the database given the keyword
+     * @param keyword The keyword to get its kid from the database
+     * @returns int Returns the kid of keyword from the database if successful and false otherwise
+     */
+    public function get_keyword_id($keyword)
+    {
+        $sql = "select * from mail_keywords where keyword = '$keyword'";
+
+        if ( $this->query($sql)) {
+
+            $kid = $this->fetch();
+
+            return $kid['kid'];
+        }
+
+        return false;
+    }
+
+    public function get_context_weights(){
 
     }
 

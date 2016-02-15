@@ -133,8 +133,9 @@ class base
       // print_r($this->result);
         if (!$this->result) {
             $this->log_error(LOG_LEVEL_DB_FAIL, 4, "query failed", mysqli_error($this->link));
-            echo mysqli_error($this->link);
+          //  echo mysqli_error($this->link);
           //  echo "result was not set!!!";
+
             return false;
         }
      //   mysqli_close($this->link);

@@ -33,7 +33,7 @@ class ContextRequests extends Contexts
     /*
      * This function inserts mail subject and sender into respective database tables
      * It then maps them in the context table
-     * @returns boolean It returns true if the insertion was successfull and false otherwise
+     * @returns boolean It returns true if the insertion was successful and false otherwise
      */
     public function insertIntoDatabaseRequest()
     {
@@ -42,21 +42,30 @@ class ContextRequests extends Contexts
           $mailSender = $_REQUEST['mailSender'];
 
           $mailSenderId = $this->insertIntoSender($mailSender);
-
           $contextIds = $this->getContextIds();
-
-          foreach($contextIds as $cid) {
-              $this->mapContextSender($mailSenderId,$cid);
+          //echo "senderId".$mailSenderId. "sender";
+          if ($mailSenderId==0) {
+           //  echo "The sender already exists";
+             // echo $this->get_sender_id($mailSender);
+          }
+          else {
+              foreach($contextIds as $cid) {
+                  $this->mapContextSender($mailSenderId,$cid);
+              }
           }
 
-              $mailKeywordsIds = $this->insertIntoKeywords($mailKeywords);
 
-              foreach ( $mailKeywordsIds as $mailKeywordId) {
 
-                  foreach($contextIds as $cid) {
-                      $this->mapContextKeyword($cid,$mailKeywordId);
-                  }
+
+
+          $mailKeywordsIds = $this->insertIntoKeywords($mailKeywords);
+          //if($mailKeywordsIds)
+
+          foreach ( $mailKeywordsIds as $mailKeywordId) {
+              foreach($contextIds as $cid) {
+                 $this->mapContextKeyword($cid,$mailKeywordId);
               }
+          }
 
         return true;
       }
@@ -97,13 +106,30 @@ class ContextRequests extends Contexts
         return false;
     }
 
+    public function getContextIds(){
+        $contextArray= array();
+
+       if ( $this->getAllContexts())
+       {
+           $contextIds  = $this->fetch();
+
+           while ( $contextIds) {
+                array_push($contextArray,$contextIds['cid']);
+
+               $contextIds = $this->fetch();
+           }
+       }
+
+        return $contextArray;
+    }
+
     /*
      * The methods below are for testing this application
      */
 
     public function get_context_sender()
     {
-       // include_once("Cont_weight.php");
+
         if(isset($_REQUEST['sid'])){
 
             $sender = $_REQUEST['sid'];
@@ -113,7 +139,7 @@ class ContextRequests extends Contexts
             foreach($cont_infos as $value){
 
                 if($value instanceof Cont_weight){
-                   // echo $value->get_context_id();
+                    echo $value->get_context_id();
                 }
 
 
@@ -124,47 +150,29 @@ class ContextRequests extends Contexts
 
     public function get_context_keyword()
     {
+        if(isset($_REQUEST['kid'])){
 
-    }
-    public function getContextIds()
-    {
-        $contextIds = array();
-        $cids = $this->getAllContexts();
+            $kid = $_REQUEST['kid'];
+            //  echo $sender;
+            $cont_infos = $this->get_Keyword_Context($kid);
 
-        if($cids){
-            $context = $this->fetch();
+            foreach($cont_infos as $value){
 
-            while ($context) {
+                if($value instanceof Cont_weight){
+                    echo $value->get_context_id();
+                    echo $value->get_context_weight();
+                }
 
-                array_push($contextIds,$context['cid']);
-                $context = $this->fetch();
 
             }
-        }
 
-        return $contextIds;
-    }
-
-    public function testRequest()
-    {
-        echo "There is hope at the end of the tunnel";
-    }
-
-    public function getKeys()
-    {
-       $ids = $this->getContextIds();
-
-        foreach ($ids as $id ) {
-            echo $id;
         }
     }
 
-    public function testing()
-    {
 
 
-        return  $this->test();
-    }
+
+
 }
 
 
@@ -189,7 +197,7 @@ if (isset($_REQUEST['cmd'])) {
             $request->insertIntoDatabaseRequest();
             break;
         case 6:
-            $request->testing();
+            $request->get_context_keyword();
             break;
         case 7:
             $request->get_context_sender();
