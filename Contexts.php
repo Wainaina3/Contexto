@@ -316,6 +316,10 @@ class Contexts extends base
      * @returns userContext object which contains context and weight
      *
      */
+    /**
+     * @param $mailSenderId
+     * @return array
+     */
     public function get_Sender_Contexts( $mailSenderId)
     {
         $context_weight_array=array();
@@ -325,16 +329,12 @@ class Contexts extends base
 
        if($this->query($sql)){
            $cont_weight=$this->fetch();
-           $count=0;
            while($cont_weight) {
 
                $object_cont_weight = new Cont_weight();
 
                $object_cont_weight->set_context_id($cont_weight['cid']);
                $object_cont_weight->set_context_weight($cont_weight['weight']);
-             //  echo $cont_weight['cid'];
-
-               //array_push($context_weight_array,new Cont_weight($cont_weight['cid'],$cont_weight['weight']));
 			   array_push($context_weight_array,$object_cont_weight);
 
                $cont_weight=$this->fetch();
@@ -385,9 +385,4 @@ class Contexts extends base
 
 
 }
-$obj=new Contexts();
-$cont_infos = $obj->get_Sender_Contexts(36);
-echo 'context:';
-var_dump($cont_infos);
-$cont_infos->get
 

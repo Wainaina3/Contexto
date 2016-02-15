@@ -45,7 +45,7 @@ class Cont_weight
      */
     public function get_context_id()
     {
-        $this->contextId;
+        return $this->contextId;
     }
 
     /*
