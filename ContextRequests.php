@@ -146,8 +146,9 @@ class ContextRequests extends Contexts
         }
 
         //this will return an array of cont_weight objects
-        $sender_contexts = $this->get_Sender_Contexts($senderId); //work on it later after completing the keywords
-
+        $sender_contexts = $this->get_Sender_Contexts($senderId);
+        //gets an array of sender weights corresponding to contexts
+        $sender_weights_array = $this->get_context_sender_weights_array($sender_contexts);
         //for each keyword
         foreach ( $keywordsIds as $value) {
             //This will return an array of cont_weight for the keyword
@@ -181,9 +182,121 @@ class ContextRequests extends Contexts
 
 
         }
+        //go and get the average weight of each context keywords
+        $average_keyword_weights = $this->get_average_weights_keywords($cont_keyword_weight_array);
+
+        //Join the two inputs and get the context.
+        $weights_array = $this->get_context_weights_array($sender_weights_array,$average_keyword_weights);
+
+        $index_of_largest = $this->get_largest_weight_index($weights_array);
+
+        return $this->get_context_name($index_of_largest,$cont_ids);
+
+    }
+    /*
+     * This function multiplies the weights with input weight then adds them for each context.
+     * @param cont_weights_sender
+     * @param cont_weights_keywords
+     * @returns array of overall weight for each context
+     */
+    public function get_context_weights_array($cont_weights_sender,$cont_weights_keywords)
+    {
+        $weights_array = array();
+        $count=0;
+        foreach($cont_weights_keywords as $value) {
+            $keyword_overall = $value*0.4;
+            $sender_overall = $cont_weights_sender[$count]*0.6;
+            $context_weight = $keyword_overall + $sender_overall;
+
+            array_push($weights_array,$context_weight);
+            $count+=1;
+        }
+
+        return $weights_array;
+
+    }
+    /*
+     * Gets the index of largest value from the array
+     * @param $context_weights_array
+     * @returns The index of largest value from the array
+     */
+    public function get_largest_weight_index($context_weights_array) {
+
+        $largest = 0;
+        $index = 0;
+        $count = 0;
+        foreach($context_weights_array as $value) {
+        if($value>$largest){
+            $largest = $value;
+            $index = $count;
+        }
+            $count+=1;
+        }
+
+        return $index;
+    }
+    /*
+     * This function gets the context given an index and contexts array
+     * @param index The index of a context
+     * @param contexts_array The array of all contexts
+     * @returns the name of the context
+     */
+    public function get_context_name ($index,$contexts_array)
+    {
+        $contextId = $contexts_array[$index];
+
+        return $this->get_context($contextId);
+
+
+    }
+    /*
+     * Given an array, It gets the average of weight values of keywords for each context and returns an array containing averages
+     * @param cont_kid_weight_array The array containing context id, and keywords weights
+     * @returns an array of average weights for contexts
+     */
+    public function get_average_weights_keywords($cont_kid_weight_array)
+    {
+        include_once("cont_keyword_weight.php");
+        include_once("keywordId_weight.php");
+        include_once("Cont_weight.php");
+        //This array will contain the average weights for each context id
+        $average_cid_weights = array();
+
+        foreach ($cont_kid_weight_array as $cont_kid_weight_object) {
+
+            if ($cont_kid_weight_object instanceof cont_keyword_weight) {
+                $context_object_keyword_array = $cont_kid_weight_object->get_kid_weight_array();
+                $keyword_weights = 0;
+                foreach($context_object_keyword_array as $kid_weight_obj) {
+                    if($kid_weight_obj instanceof keywordId_weight) {
+                        $keyword_weights+=$kid_weight_obj->get_weight();
+                    }
+                }
+                $average_weight = $keyword_weights/count($context_object_keyword_array);
+
+                $cont_kid_weight_object->set_kid_weight_average($average_weight);
+                array_push($average_cid_weights,$average_weight);
+            }
+        }
+        return $average_cid_weights;
     }
 
+    /*
+     * This function gets the weights of senders for a given context and returns the weights in an array
+     * @param cont_sender_weights
+     */
+    public function get_context_sender_weights_array($cont_sender_weights)
+    {
+        $sender_weights_array = array();
 
+        foreach($cont_sender_weights as $cont_weight_object) {
+            if ($cont_weight_object instanceof Cont_weight) {
+               array_push($sender_weights_array,$cont_weight_object->get_context_weight());
+            }
+        }
+
+        return $sender_weights_array;
+    }
     /*
      * The methods below are for testing this application
      */

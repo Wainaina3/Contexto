@@ -32,4 +32,13 @@ class cont_keyword_weight
         return $this->kid_weight_array;
     }
 
+    public function set_kid_weight_average($avg_weight)
+    {
+        $this->average_weight = $avg_weight;
+    }
+    public function get_kid_weight_average()
+    {
+        return $this->average_weight;
+    }
+
 }

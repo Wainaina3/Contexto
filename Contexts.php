@@ -138,6 +138,26 @@ class Contexts extends base
         return $this->query($sql);
     }
 
+    /*
+     * This function returns the context name given its id
+     * @param $context_id The context id
+     * @returns The context name if successful and false otherwise
+     */
+
+    public function get_context($context_id)
+    {
+        $sql = "select * from context_table where cid = '$context_id'";
+
+        if($this->query($sql)) {
+            $context_fetch = $this->fetch();
+            $context_name = $context_fetch['context'];
+            return $context_name;
+
+        }
+
+        return false;
+    }
+
     public function getAllkeywords()
     {
         $sql = "select kid from mail_keywords";
