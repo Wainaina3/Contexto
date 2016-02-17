@@ -64,6 +64,7 @@ class ContextRequests extends Contexts
               }
           }
 
+          $this->get_email_context($mailSenderId,$mailKeywordsIds);
         return true;
       }
         return false;
@@ -153,6 +154,7 @@ class ContextRequests extends Contexts
         foreach ( $keywordsIds as $value) {
             //This will return an array of cont_weight for the keyword
            $cont_weight_keywords = $this->get_Keyword_Context($value);
+
             foreach ($cont_weight_keywords as $weight_keyword)
             {
                 //Cont_weight holds cid and weight of a keyword
@@ -166,6 +168,8 @@ class ContextRequests extends Contexts
                     $context_keyword_weight_obj = $cont_keyword_weight_array[$cont_id_index];
 
                     if ($context_keyword_weight_obj instanceof cont_keyword_weight) {
+                      //  echo "I want to see this object";
+                       // print_r($context_keyword_weight_obj);
                         //set the context Id of that object
                        // $context_keyword_weight_obj->set_contextId($cont_id_index);
                         //create a keywordId_weight object
@@ -176,12 +180,15 @@ class ContextRequests extends Contexts
                         $kid_weight->set_weight($keyword_weight);
                         //add the keyword_weight object in the cont_keyword_weight kid_weight_array
                         $context_keyword_weight_obj->add_kid_weight($kid_weight);
+                      //  echo "After adding things";
+                       // print_r($context_keyword_weight_obj);
                     }
                 }
             }
 
 
         }
+        print_r($cont_keyword_weight_array);
         //go and get the average weight of each context keywords
         $average_keyword_weights = $this->get_average_weights_keywords($cont_keyword_weight_array);
 
@@ -189,8 +196,10 @@ class ContextRequests extends Contexts
         $weights_array = $this->get_context_weights_array($sender_weights_array,$average_keyword_weights);
 
         $index_of_largest = $this->get_largest_weight_index($weights_array);
+        $contextName = $this->get_context_name($index_of_largest,$cont_ids);
 
-        return $this->get_context_name($index_of_largest,$cont_ids);
+        echo $contextName;
+        return $contextName;
 
     }
     /*
@@ -256,6 +265,7 @@ class ContextRequests extends Contexts
      */
     public function get_average_weights_keywords($cont_kid_weight_array)
     {
+       // print_r($cont_kid_weight_array);
         include_once("cont_keyword_weight.php");
         include_once("keywordId_weight.php");
         include_once("Cont_weight.php");
@@ -263,15 +273,20 @@ class ContextRequests extends Contexts
         $average_cid_weights = array();
 
         foreach ($cont_kid_weight_array as $cont_kid_weight_object) {
-
+            // print_r($cont_kid_weight_array);
             if ($cont_kid_weight_object instanceof cont_keyword_weight) {
                 $context_object_keyword_array = $cont_kid_weight_object->get_kid_weight_array();
+            //   print_r($context_object_keyword_array);
                 $keyword_weights = 0;
                 foreach($context_object_keyword_array as $kid_weight_obj) {
+
                     if($kid_weight_obj instanceof keywordId_weight) {
+                      //  print_r($kid_weight_obj);
                         $keyword_weights+=$kid_weight_obj->get_weight();
                     }
                 }
+               // print_r($context_object_keyword_array);
+                //print_r(count($context_object_keyword_array));
                 $average_weight = $keyword_weights/count($context_object_keyword_array);
 
                 $cont_kid_weight_object->set_kid_weight_average($average_weight);

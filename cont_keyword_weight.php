@@ -23,7 +23,10 @@ class cont_keyword_weight
     }
 
     public function add_kid_weight($kid_weight){
-        array_push($kid_weight_array,$kid_weight);
+        echo "In the cont_kid class";
+       // print_r($kid_weight);
+        array_push($this->kid_weight_array,$kid_weight);
+       // print_r($this->kid_weight_array);
 
     }
 
